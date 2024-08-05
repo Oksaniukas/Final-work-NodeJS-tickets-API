@@ -8,14 +8,12 @@ const authUser = (req, res, next) => {
     return res.status(401).json({ message: "No token provided" });
   }
 
-  try {
-    const decodedInfo = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.userId = decodedInfo.userId;
-    next();
-  } catch (err) {
-    console.error('Token verification error:', err);
-    res.status(401).json({ message: "Invalid token" });
+
+  const decodedInfo = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+  if (!decodedInfo) {
+    return res.status(401).json({ message: "Auth is bad" });
   }
+  next();
 };
 
 export default authUser;

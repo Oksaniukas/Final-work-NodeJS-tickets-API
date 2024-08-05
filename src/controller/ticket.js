@@ -6,9 +6,8 @@ const ADD_TICKET = async (req, res) => {
   try {
     const { title, price, departurePlace, arrivalPlace, arrivalPlaceImgUrl, userId } = req.body;
 
-    // Fetch user to check balance
+    
     const user = await UserModel.findOne({ id: userId });
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
