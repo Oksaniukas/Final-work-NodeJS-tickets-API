@@ -118,7 +118,7 @@ const LOGIN = async (req, res) => {
   }
 };
 
-const REFRESH_TOKEN = async (req, res) => {
+const GENERATE_REFRESH_TOKEN = async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
@@ -128,8 +128,8 @@ const REFRESH_TOKEN = async (req, res) => {
   }
 
   try {
-    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    const user = await UserModel.findOne({ id: payload.userId });
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await UserModel.findOne({ id: decoded.userId });
 
     if (!user || user.refreshToken !== refreshToken) {
       return res.status(403).json({ message: "Invalid refresh token" });
@@ -149,13 +149,11 @@ const REFRESH_TOKEN = async (req, res) => {
     user.refreshToken = newRefreshToken;
     await user.save();
 
-    res
-      .status(200)
-      .json({
-        message: "Token was refresh successfully",
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      });
+    res.status(200).json({
+      message: "Token was refresh successfully",
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
   } catch (err) {
     console.error(err);
     res
@@ -166,13 +164,9 @@ const REFRESH_TOKEN = async (req, res) => {
 
 const GET_ALL_USERS = async (req, res) => {
   try {
-    const users = await UserModel.find();
+    const users = await UserModel.find().sort({ name: 1 });
 
-    const sortedUsers = users.sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
-    );
-
-    return res.status(200).json({ users: sortedUsers });
+    return res.status(200).json({ users: users });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "server error" });
@@ -222,7 +216,7 @@ const GET_USER_BY_ID_WITH_TICKETS = async (req, res) => {
 export {
   SIGN_UP,
   LOGIN,
-  REFRESH_TOKEN,
+  GENERATE_REFRESH_TOKEN,
   GET_USER_BY_ID,
   GET_ALL_USERS,
   GET_USER_BY_ID_WITH_TICKETS,
